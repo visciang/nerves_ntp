@@ -1,42 +1,32 @@
 # NervesNtp
 
-NervesNtp is simple OTP application which synchronizes time using busybox `ntpd` command. Primary use is for [Nerves](http://nerves-project.org) embedded devices without RTC.
-
-There are two configuration options:
-
-```elixir
-# config/config.exs
-use Mix.Config
-
-# ntpd binary to use
-config :nerves_ntp, :ntpd, "/usr/sbin/ntpd"
- 
-# servers to sync time from
-config :nerves_ntp, :servers, [
-    "0.pool.ntp.org",
-    "1.pool.ntp.org", 
-    "2.pool.ntp.org", 
-    "3.pool.ntp.org"
-  ]
-```
+Synchronizes time using busybox `ntpd` command. Primary use is for [Nerves](http://nerves-project.org) embedded devices.
 
 ## Installation
 
-The package can be installed as:
+Add `nerves_ntp` to your list of dependencies in `mix.exs`:
 
-  1. Add `nerves_ntp` to your list of dependencies in `mix.exs`:
+```elixir
+def deps do
+  [{:nerves_ntp,  git: "https://github.com/visciang/nerves_ntp.git", tag: "xxx"]
+end
+```
 
-    ```elixir
-    def deps do
-      [{:nerves_ntp, "~> 0.1.0"}]
-    end
-    ```
+## Usage
 
-  2. Ensure `nerves_ntp` is started before your application:
+If your application needs a mandatory sync at startup, add at the beginning of your application module:
 
-    ```elixir
-    def application do
-      [applications: [:nerves_ntp]]
-    end
-    ```
+```elixir
+defmodule MyApplication do
+  use Application
 
+  def start(_type, _args) do
+    # blocks till a successful sync completes
+    NervesNTP.sync(true)
+
+    # ...
+
+    Supervisor.start_link(children, opts)    
+  end
+end
+```
