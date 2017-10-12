@@ -1,4 +1,9 @@
 defmodule NervesNTP do
+  @moduledoc """
+  Synchronizes time using busybox `ntpd` command.
+  
+  Primary use is for [Nerves](http://nerves-project.org) embedded devices.
+  """
   require Logger
 
   @timeout Application.get_env(:nerves_ntp, :timeout, 20_000)
@@ -8,6 +13,11 @@ defmodule NervesNTP do
   @servers Application.get_env(:nerves_ntp, :servers, ["0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org", "3.pool.ntp.org"])
   @ntpd_cmd "#{@ntpd} -n -q -N #{Enum.map_join(@servers, " ", &("-p #{&1}"))}"
 
+  @doc """
+  Start NTPD synchronization.
+
+  If `block` is `true` the function will block till a sync is successfully completed.
+  """
   @spec sync(boolean) :: :ok | :error
   def sync(block \\ false) do
     Logger.info("NervesNTP sync")
