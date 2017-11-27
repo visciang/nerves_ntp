@@ -19,7 +19,7 @@ defmodule MyApplication do
   use Application
 
   def start(_type, _args) do
-    children = [{NervesNTP.Daemon, [sync_on_start: true]}, ...]
+    children = [{NervesNTP, [sync_on_start: true]}, ...]
     opts = [...]
     Supervisor.start_link(children, opts)    
   end

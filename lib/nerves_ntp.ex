@@ -1,4 +1,24 @@
 defmodule NervesNTP do
+  use Task, restart: :permanent
+
+  @daemon_sync_period Application.get_env(:nerves_ntp, :daemon_sync_period, 12 * 60 * 60 * 1000)
+
+  def start_link([sync_on_start: sync_on_start]) do
+    if sync_on_start do
+      NervesNTP.Cmd.sync(true)
+    end
+
+    Task.start_link(__MODULE__, :run, [])
+  end
+
+  def run() do
+    Process.sleep(@daemon_sync_period)
+    NervesNTP.Cmd.sync(false)
+    run()
+  end
+end
+
+defmodule NervesNTP.Cmd do
   @moduledoc """
   Synchronizes time using busybox `ntpd` command.
   
@@ -76,25 +96,5 @@ defmodule NervesNTP do
     end
 
     result
-  end
-end
-
-defmodule NervesNTP.Daemon do
-  use Task, restart: :permanent
-
-  @daemon_sync_period Application.get_env(:nerves_ntp, :daemon_sync_period, 12 * 60 * 60 * 1000)
-
-  def start_link([sync_on_start: sync_on_start]) do
-    if sync_on_start do
-      NervesNTP.sync(true)
-    end
-
-    Task.start_link(__MODULE__, :run, [])
-  end
-
-  def run() do
-    Process.sleep(@daemon_sync_period)
-    NervesNTP.sync(false)
-    run()
   end
 end
