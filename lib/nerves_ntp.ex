@@ -7,7 +7,7 @@ defmodule NervesNTP do
   require Logger
 
   @timeout Application.get_env(:nerves_ntp, :timeout, 20_000)
-  @pause_restart_period Application.get_env(:nerves_ntp, :pause_restart_period, 5_000)
+  @on_error_restart_period Application.get_env(:nerves_ntp, :on_error_restart_period, 5_000)
 
   @ntpd Application.get_env(:nerves_ntp, :ntpd, "/usr/sbin/ntpd")
   @servers Application.get_env(:nerves_ntp, :servers, ["0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org", "3.pool.ntp.org"])
@@ -16,7 +16,7 @@ defmodule NervesNTP do
   @doc """
   Start NTPD synchronization.
 
-  If `block` is `true` the function will block till a sync is successfully completed.
+  If `block` is `true` the function will block till a sync successfully complete.
   """
   @spec sync(boolean) :: :ok | :error
   def sync(block \\ false) do
@@ -26,7 +26,7 @@ defmodule NervesNTP do
     result = Task.await(task, :infinity)
 
     if block and result == :error do
-      Process.sleep(@pause_restart_period)
+      Process.sleep(@on_error_restart_period)
       sync(block)
     else
       result
@@ -76,5 +76,25 @@ defmodule NervesNTP do
     end
 
     result
+  end
+end
+
+defmodule NervesNTP.Daemon do
+  use Task, restart: :permanent
+
+  @daemon_sync_period Application.get_env(:nerves_ntp, :daemon_sync_period, 12 * 60 * 60 * 1000)
+
+  def start_link([sync_on_start: sync_on_start]) do
+    if sync_on_start do
+      NervesNTP.sync(true)
+    end
+
+    Task.start_link(__MODULE__, :run, [])
+  end
+
+  def run() do
+    Process.sleep(@daemon_sync_period)
+    NervesNTP.sync(false)
+    run()
   end
 end

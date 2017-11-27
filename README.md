@@ -14,18 +14,13 @@ end
 
 ## Usage
 
-If your application needs a mandatory sync at startup, add at the beginning of your application module:
-
 ```elixir
 defmodule MyApplication do
   use Application
 
   def start(_type, _args) do
-    # blocks till a successful sync completes
-    NervesNTP.sync(true)
-
-    # ...
-
+    children = [{NervesNTP.Daemon, [sync_on_start: true]}, ...]
+    opts = [...]
     Supervisor.start_link(children, opts)    
   end
 end
