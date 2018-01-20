@@ -1,4 +1,6 @@
-# NervesNtp
+# NervesNTP
+
+[![Build Status](https://travis-ci.org/visciang/nerves_ntp.svg?branch=master)](https://travis-ci.org/visciang/nerves_ntp)
 
 Synchronizes time using busybox `ntpd` command. Primary use is for [Nerves](http://nerves-project.org) embedded devices.
 
