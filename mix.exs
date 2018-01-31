@@ -4,7 +4,7 @@ defmodule NervesNTP.Mixfile do
   def project do
     [
       app: :nerves_ntp,
-      version: "0.2.0"
+      version: "0.2.1"
     ]
   end
 
